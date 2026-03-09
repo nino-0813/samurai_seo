@@ -717,7 +717,7 @@
   let scaleValues = { scale1: 0, scale2: 0, scale3: 0, scale4: 0 };
 
   // ★ Google Apps ScriptのウェブアプリURLをここに入れる
-  const SPREADSHEET_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+  const SPREADSHEET_URL = 'https://script.google.com/macros/s/AKfycbzRox5qv6yuzRIWIa7HnPJi2rFaS5Y_Wy48xj9rdSjuq-e9C2mZasXDZOgkCLuh51FVmg/exec';
 
   function updateProgress(current) {
     const pct = ((current - 1) / SECTIONS) * 100;
@@ -831,11 +831,12 @@
 
     try {
       if (SPREADSHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+        // form-urlencoded で送信（CORS プリフライトを避け、GAS doPost で受け取りやすくする）
         await fetch(SPREADSHEET_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'data=' + encodeURIComponent(JSON.stringify(data)),
         });
       } else {
         // デモ用：URLが未設定でも完了画面を表示
