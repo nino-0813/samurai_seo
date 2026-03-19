@@ -1,8 +1,7 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getConfig } from './_config';
 import { getSheets, type SheetRow } from './_sheets';
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
+export default async function handler(_req: any, res: any) {
   const { spreadsheetId, sheetName } = getConfig();
   if (!spreadsheetId) {
     return res.status(503).json({ error: 'SPREADSHEET_ID が未設定です' });

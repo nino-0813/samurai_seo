@@ -1,8 +1,7 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getConfig } from './_config';
 import { ensureHeaderRow, getSheets, readJsonBody, type SaveRowInput } from './_sheets';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   const { spreadsheetId, sheetName } = getConfig();
