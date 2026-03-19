@@ -40,14 +40,40 @@ async function readBody(req: any): Promise<string> {
 
 export default async function handler(req: any, res: any) {
   const base = gasUrl();
-  if (!base) return json(res, 503, { ok: false, error: 'VITE_GAS_WEBAPP_URL が未設定です' });
+  if (!base) {
+    return json(res, 503, {
+      ok: false,
+      error: 'VITE_GAS_WEBAPP_URL が未設定です',
+      env: {
+        hasViteGasWebappUrl: Boolean(process.env.VITE_GAS_WEBAPP_URL),
+        hasGasWebappUrl: Boolean(process.env.GAS_WEBAPP_URL),
+        hasViteGasToken: Boolean(process.env.VITE_GAS_TOKEN),
+        hasGasToken: Boolean(process.env.GAS_TOKEN),
+      },
+    });
+  }
+
+  if (typeof fetch !== 'function') {
+    return json(res, 500, { ok: false, error: 'Runtime に fetch がありません（Node ランタイムを確認してください）' });
+  }
 
   try {
     if (req.method === 'GET') {
       const action = String((req.query && req.query.action) || 'health');
       const target = withToken(`${base}?action=${encodeURIComponent(action)}`);
-      const r = await fetch(target, { method: 'GET' });
+      let r: Response;
+      try {
+        r = await fetch(target, { method: 'GET' });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return json(res, 502, { ok: false, error: `GAS への通信に失敗しました: ${msg}`, targetBase: base, action });
+      }
       const text = await r.text();
+      // GAS が HTML を返すケースもあるので、その場合は JSON で包む
+      const isJsonish = text.trim().startsWith('{') || text.trim().startsWith('[');
+      if (!isJsonish) {
+        return json(res, 502, { ok: false, error: 'GAS から JSON 以外が返りました', status: r.status, body: text.slice(0, 500) });
+      }
       res.status(r.status);
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.end(text);
@@ -57,11 +83,17 @@ export default async function handler(req: any, res: any) {
     if (req.method === 'POST') {
       const target = withToken(base);
       const body = await readBody(req);
-      const r = await fetch(target, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-      });
+      let r: Response;
+      try {
+        r = await fetch(target, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return json(res, 502, { ok: false, error: `GAS への通信に失敗しました: ${msg}`, targetBase: base });
+      }
       const text = await r.text();
       res.status(r.status);
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
