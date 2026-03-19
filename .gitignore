@@ -1,0 +1,12 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+secrets/
+*-service-account*.json
+# サービスアカウント鍵（プッシュしない）
+samuraiseo-490701-735437491637.json
