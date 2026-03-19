@@ -25,10 +25,23 @@
 
 初回保存時、1行目が空なら列見出し（作成日時・案件名・売上…）が自動で入り、2行目からデータが追加されます。
 
-## Vercel 環境変数
+## Vercel（おすすめ: Google Apps Script 方式）
 
-Vercel では鍵ファイルパス（`GOOGLE_APPLICATION_CREDENTIALS`）ではなく、JSON 本文を 1 行にした `GOOGLE_SERVICE_ACCOUNT_JSON` を使うのがおすすめです。
+Vercel に秘密鍵を置かずに動かすなら、**Google Apps Script をウェブアプリとしてデプロイ**して、その URL をフロントから叩く方式がおすすめです。
 
-- **`SPREADSHEET_ID`**: スプレッドシートURLの `/d/` と `/edit` の間
-- **`SHEET_NAME`**: `シート1`
-- **`GOOGLE_SERVICE_ACCOUNT_JSON`**: サービスアカウントJSON（改行なし1行でコピペ）
+### 1) Apps Script をデプロイ
+
+手順は `google-apps-script/SETUP.md` を参照してください。
+
+### 2) Vercel の環境変数
+
+- **`VITE_GAS_WEBAPP_URL`**: Apps Script の Web アプリ URL
+- **`VITE_GAS_TOKEN`**: （任意）GAS の `TOKEN` を設定した場合のみ
+
+## 参考: サービスアカウント方式（鍵を Vercel に置く）
+
+サービスアカウント方式を使う場合は以下（非推奨）:
+
+- `SPREADSHEET_ID`
+- `SHEET_NAME`
+- `GOOGLE_SERVICE_ACCOUNT_JSON`（改行なし1行）
