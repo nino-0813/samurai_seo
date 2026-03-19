@@ -28,3 +28,7 @@
 ## Vercel 環境変数
 
 Vercel では鍵ファイルパス（`GOOGLE_APPLICATION_CREDENTIALS`）ではなく、JSON 本文を 1 行にした `GOOGLE_SERVICE_ACCOUNT_JSON` を使うのがおすすめです。
+
+- **`SPREADSHEET_ID`**: スプレッドシートURLの `/d/` と `/edit` の間
+- **`SHEET_NAME`**: `シート1`
+- **`GOOGLE_SERVICE_ACCOUNT_JSON`**: サービスアカウントJSON（改行なし1行でコピペ）
