@@ -41,10 +41,10 @@ export function isGasEnabled(): boolean {
 }
 
 export async function checkGasHealth(): Promise<boolean> {
-  const gas = gasBaseUrl();
-  if (!gas) return false;
+  if (!isGasEnabled()) return false;
   try {
-    const res = await fetch(withToken(`${gas}?action=health`));
+    // GAS は CORS 制約があるため、同一オリジンの /api/gas 経由で呼ぶ
+    const res = await fetch('/api/gas?action=health');
     const data = (await res.json()) as { ok?: boolean };
     return Boolean(res.ok && data && data.ok);
   } catch {
@@ -56,8 +56,8 @@ export async function fetchSheetConfig(): Promise<{ spreadsheetId: string; sheet
   try {
     const gas = gasBaseUrl();
     if (gas) {
-      const res = await fetch(withToken(`${gas}?action=config`));
-      const data = (await res.json()) as { ok?: boolean; spreadsheetId?: string; sheetName?: string };
+      const res = await fetch('/api/gas?action=config');
+      const data = (await res.json()) as { ok?: boolean; spreadsheetId?: string; sheetName?: string; error?: string };
       if (!res.ok || !data.ok) return null;
       if (!data.spreadsheetId || !data.sheetName) return null;
       return { spreadsheetId: data.spreadsheetId, sheetName: data.sheetName };
@@ -74,7 +74,7 @@ export async function fetchSheetConfig(): Promise<{ spreadsheetId: string; sheet
 export async function fetchCalculationRows(): Promise<SheetRow[]> {
   const gas = gasBaseUrl();
   if (gas) {
-    const res = await fetch(withToken(`${gas}?action=rows`));
+    const res = await fetch('/api/gas?action=rows');
     const data = (await res.json()) as { ok?: boolean; rows?: SheetRow[]; error?: string };
     if (!res.ok || !data.ok) throw new Error(data.error || '一覧の取得に失敗しました');
     return Array.isArray(data.rows) ? data.rows : [];
@@ -95,7 +95,7 @@ export async function fetchCalculationRows(): Promise<SheetRow[]> {
 export async function appendCalculationRow(row: SaveRowInput): Promise<void> {
   const gas = gasBaseUrl();
   if (gas) {
-    const res = await fetch(withToken(gas), {
+    const res = await fetch('/api/gas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'append', ...row }),
