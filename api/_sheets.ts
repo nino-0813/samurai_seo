@@ -1,4 +1,6 @@
-import { google, sheets_v4 } from 'googleapis';
+// NOTE: Vercel の ESM 実行環境でも確実に動くように名前付き import を避ける
+import * as googleapis from 'googleapis';
+import type { sheets_v4 } from 'googleapis';
 
 export const SHEET_HEADERS = [
   '作成日時',
@@ -51,12 +53,19 @@ export function getSheets(): sheets_v4.Sheets {
   if (!jsonRaw) {
     throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON が未設定です（Vercel の Env に貼り付けてください）');
   }
-  const credentials = JSON.parse(jsonRaw) as object;
-  const auth = new google.auth.GoogleAuth({
+  let credentials: object;
+  try {
+    credentials = JSON.parse(jsonRaw) as object;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(`GOOGLE_SERVICE_ACCOUNT_JSON の JSON 解析に失敗しました: ${msg}`);
+  }
+
+  const auth = new googleapis.google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
-  return google.sheets({ version: 'v4', auth });
+  return googleapis.google.sheets({ version: 'v4', auth });
 }
 
 export async function ensureHeaderRow(
