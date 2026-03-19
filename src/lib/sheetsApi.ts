@@ -36,6 +36,22 @@ function withToken(url: string): string {
   return `${url}${sep}token=${encodeURIComponent(token)}`;
 }
 
+export function isGasEnabled(): boolean {
+  return Boolean(gasBaseUrl());
+}
+
+export async function checkGasHealth(): Promise<boolean> {
+  const gas = gasBaseUrl();
+  if (!gas) return false;
+  try {
+    const res = await fetch(withToken(`${gas}?action=health`));
+    const data = (await res.json()) as { ok?: boolean };
+    return Boolean(res.ok && data && data.ok);
+  } catch {
+    return false;
+  }
+}
+
 export async function fetchSheetConfig(): Promise<{ spreadsheetId: string; sheetName: string } | null> {
   try {
     const gas = gasBaseUrl();

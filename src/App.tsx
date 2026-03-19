@@ -18,8 +18,10 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import {
   appendCalculationRow,
+  checkGasHealth,
   fetchCalculationRows,
   fetchSheetConfig,
+  isGasEnabled,
   spreadsheetUrl,
   type SheetRow,
 } from './lib/sheetsApi';
@@ -67,11 +69,16 @@ export default function App() {
   const [listError, setListError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/health')
-      .then((r) => r.ok)
-      .then(setApiReady)
-      .catch(() => setApiReady(false));
-    fetchSheetConfig().then(setSheetConfig);
+    if (isGasEnabled()) {
+      checkGasHealth().then(setApiReady);
+      fetchSheetConfig().then(setSheetConfig);
+    } else {
+      fetch('/api/health')
+        .then((r) => r.ok)
+        .then(setApiReady)
+        .catch(() => setApiReady(false));
+      fetchSheetConfig().then(setSheetConfig);
+    }
   }, []);
 
   const handleOrderAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
