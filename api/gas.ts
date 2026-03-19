@@ -1,5 +1,9 @@
 import { env } from './_config';
 
+export const config = {
+  runtime: 'nodejs',
+};
+
 type Json = Record<string, unknown>;
 
 function json(res: any, status: number, body: Json) {
