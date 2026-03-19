@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getConfig, getSheets, type SheetRow } from './_sheets';
+import { getConfig } from './_config';
+import { getSheets, type SheetRow } from './_sheets';
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   const { spreadsheetId, sheetName } = getConfig();

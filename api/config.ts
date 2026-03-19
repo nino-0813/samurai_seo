@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getConfig } from './_sheets';
+import { getConfig } from './_config';
 
 export default function handler(_req: VercelRequest, res: VercelResponse) {
   const { spreadsheetId, sheetName } = getConfig();

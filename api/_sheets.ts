@@ -1,6 +1,6 @@
-// NOTE: Vercel の ESM 実行環境でも確実に動くように名前付き import を避ける
 import * as googleapis from 'googleapis';
 import type { sheets_v4 } from 'googleapis';
+import { env } from './_config';
 
 export const SHEET_HEADERS = [
   '作成日時',
@@ -31,28 +31,27 @@ export type SaveRowInput = {
   profitMarginPct: number;
 };
 
-export function envOrThrow(name: string): string {
-  const v = process.env[name]?.trim();
-  if (!v) throw new Error(`${name} が未設定です`);
-  return v;
+function looksLikeJson(s: string): boolean {
+  const t = s.trim();
+  return (t.startsWith('{') && t.endsWith('}')) || (t.startsWith('[') && t.endsWith(']'));
 }
 
-export function env(name: string, fallback?: string): string | undefined {
-  const v = process.env[name]?.trim();
-  return v || fallback;
-}
+function getServiceAccountJson(): string {
+  const jsonRaw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON?.trim();
+  if (jsonRaw) return jsonRaw;
 
-export function getConfig() {
-  const spreadsheetId = env('SPREADSHEET_ID');
-  const sheetName = env('SHEET_NAME', 'シート1')!;
-  return { spreadsheetId, sheetName };
+  // 互換: 間違って GOOGLE_APPLICATION_CREDENTIALS に JSON を貼ってしまうケースを救済
+  const maybe = process.env.GOOGLE_APPLICATION_CREDENTIALS?.trim();
+  if (maybe && looksLikeJson(maybe)) return maybe;
+
+  throw new Error(
+    'GOOGLE_SERVICE_ACCOUNT_JSON が未設定です（Vercel の Env に貼り付けてください）。' +
+      '※ いま GOOGLE_APPLICATION_CREDENTIALS に JSON を貼っている場合は GOOGLE_SERVICE_ACCOUNT_JSON に移してください。'
+  );
 }
 
 export function getSheets(): sheets_v4.Sheets {
-  const jsonRaw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON?.trim();
-  if (!jsonRaw) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON が未設定です（Vercel の Env に貼り付けてください）');
-  }
+  const jsonRaw = getServiceAccountJson();
   let credentials: object;
   try {
     credentials = JSON.parse(jsonRaw) as object;
